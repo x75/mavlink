@@ -131,7 +131,6 @@ MAVLINK_HELPER void _mav_finalize_message_chan_send(mavlink_channel_t chan, uint
 	_mavlink_send_uart(chan, (const char *)ck, 2);
 	MAVLINK_END_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + (uint16_t)length);
 }
-#endif // MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
 /**
  * @brief re-send a message over a uart channel
@@ -150,7 +149,7 @@ MAVLINK_HELPER void mavlink_uart_resend(mavlink_channel_t chan, const mavlink_me
 	_mavlink_send_uart(chan, (const char *)ck, 2);
 	MAVLINK_END_UART_SEND(chan, MAVLINK_NUM_NON_PAYLOAD_BYTES + msg->len);
 }
-
+#endif // MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
 /**
  * @brief Pack a message to send it over a serial byte stream
