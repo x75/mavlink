@@ -57,19 +57,19 @@
           </enum>
           <enum name="HUCH_LIN_SEN_CTRL_CMD">
             <description>commands for huch linSen</description>
-               <entry name = "DEBUG_RAW_LINE"></entry>
-               <entry name = "EXPOSURE_GET"></entry>
-               <entry name = "EXPOSURE_SET"></entry>
-               <entry name = "GAIN_GET"></entry>
-               <entry name = "GAIN_SET"></entry>
-               <entry name = "DEBUG"></entry>
-               <entry name = "RESULT"></entry>
-               <entry name = "AVG_GET"></entry>
-               <entry name = "AVG_SET"></entry>
-               <entry name = "ALGO_GET"></entry>
-               <entry name = "ALGO_SET"></entry>
-               <entry name = "LED_GREEN"></entry>
-               <entry name = "LED_BLUE"></entry>
+               <entry name = "LIN_SEN_DEBUG_RAW_LINE"></entry>
+               <entry name = "LIN_SEN_EXPOSURE_GET"></entry>
+               <entry name = "LIN_SEN_EXPOSURE_SET"></entry>
+               <entry name = "LIN_SEN_GAIN_GET"></entry>
+               <entry name = "LIN_SEN_GAIN_SET"></entry>
+               <entry name = "LIN_SEN_DEBUG"></entry>
+               <entry name = "LIN_SEN_RESULT"></entry>
+               <entry name = "LIN_SEN_AVG_GET"></entry>
+               <entry name = "LIN_SEN_AVG_SET"></entry>
+               <entry name = "LIN_SEN_ALGO_GET"></entry>
+               <entry name = "LIN_SEN_ALGO_SET"></entry>
+               <entry name = "LIN_SEN_LED_GREEN"></entry>
+               <entry name = "LIN_SEN_LED_BLUE"></entry>
           </enum>
     </enums>
 
