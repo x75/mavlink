@@ -6,7 +6,7 @@ Generated from: ardupilotmega.xml,common.xml
 Note: this file has been auto-generated. DO NOT EDIT
 '''
 
-import struct, array, mavutil, time
+import struct, array, mavutil, time, json
 
 WIRE_PROTOCOL_VERSION = "1.0"
 
@@ -87,6 +87,16 @@ class MAVLink_message(object):
             ret += '%s : %s, ' % (a, v)
         ret = ret[0:-2] + '}'
         return ret            
+
+    def to_dict(self):
+        d = dict({})
+        d['mavpackettype'] = self._type
+        for a in self._fieldnames:
+          d[a] = getattr(self, a)
+        return d
+
+    def to_json(self):
+        return json.dumps(self.to_dict)
 
     def pack(self, mav, crc_extra, payload):
         self._payload = payload
@@ -175,7 +185,8 @@ MAV_CMD_ENUM_END = 401 #
 # FENCE_ACTION
 FENCE_ACTION_NONE = 0 # Disable fenced mode
 FENCE_ACTION_GUIDED = 1 # Switched to guided mode to return point (fence point 0)
-FENCE_ACTION_ENUM_END = 2 # 
+FENCE_ACTION_REPORT = 2 # Report fence breach, but don't take action
+FENCE_ACTION_ENUM_END = 3 # 
 
 # FENCE_BREACH
 FENCE_BREACH_NONE = 0 # No last fence breach
@@ -183,6 +194,21 @@ FENCE_BREACH_MINALT = 1 # Breached minimum altitude
 FENCE_BREACH_MAXALT = 2 # Breached minimum altitude
 FENCE_BREACH_BOUNDARY = 3 # Breached fence boundary
 FENCE_BREACH_ENUM_END = 4 # 
+
+# LIMITS_STATE
+LIMITS_INIT = 0 #  pre-initialization
+LIMITS_DISABLED = 1 #  disabled
+LIMITS_ENABLED = 2 #  checking limits
+LIMITS_TRIGGERED = 3 #  a limit has been breached
+LIMITS_RECOVERING = 4 #  taking action eg. RTL
+LIMITS_RECOVERED = 5 #  we're no longer in breach of a limit
+LIMITS_STATE_ENUM_END = 6 # 
+
+# LIMIT_MODULE
+LIMIT_GPSLOCK = 1 #  pre-initialization
+LIMIT_GEOFENCE = 2 #  disabled
+LIMIT_ALTITUDE = 4 #  checking limits
+LIMIT_MODULE_ENUM_END = 5 # 
 
 # MAV_AUTOPILOT
 MAV_AUTOPILOT_GENERIC = 0 # Generic autopilot, full support for everything
@@ -389,6 +415,19 @@ MAV_CMD_ACK_ERR_Y_LON_OUT_OF_RANGE = 8 # The Y or longitude value is out of rang
 MAV_CMD_ACK_ERR_Z_ALT_OUT_OF_RANGE = 9 # The Z or altitude value is out of range.
 MAV_CMD_ACK_ENUM_END = 10 # 
 
+# MAV_PARAM_TYPE
+MAV_PARAM_TYPE_UINT8 = 1 # 8-bit unsigned integer
+MAV_PARAM_TYPE_INT8 = 2 # 8-bit signed integer
+MAV_PARAM_TYPE_UINT16 = 3 # 16-bit unsigned integer
+MAV_PARAM_TYPE_INT16 = 4 # 16-bit signed integer
+MAV_PARAM_TYPE_UINT32 = 5 # 32-bit unsigned integer
+MAV_PARAM_TYPE_INT32 = 6 # 32-bit signed integer
+MAV_PARAM_TYPE_UINT64 = 7 # 64-bit unsigned integer
+MAV_PARAM_TYPE_INT64 = 8 # 64-bit signed integer
+MAV_PARAM_TYPE_REAL32 = 9 # 32-bit floating-point
+MAV_PARAM_TYPE_REAL64 = 10 # 64-bit floating-point
+MAV_PARAM_TYPE_ENUM_END = 11 # 
+
 # MAV_RESULT
 MAV_RESULT_ACCEPTED = 0 # Command ACCEPTED and EXECUTED
 MAV_RESULT_TEMPORARILY_REJECTED = 1 # Command TEMPORARY REJECTED/DENIED
@@ -451,6 +490,12 @@ MAVLINK_MSG_ID_AHRS = 163
 MAVLINK_MSG_ID_SIMSTATE = 164
 MAVLINK_MSG_ID_HWSTATUS = 165
 MAVLINK_MSG_ID_RADIO = 166
+MAVLINK_MSG_ID_LIMITS_STATUS = 167
+MAVLINK_MSG_ID_WIND = 168
+MAVLINK_MSG_ID_DATA16 = 169
+MAVLINK_MSG_ID_DATA32 = 170
+MAVLINK_MSG_ID_DATA64 = 171
+MAVLINK_MSG_ID_DATA96 = 172
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -761,9 +806,9 @@ class MAVLink_simstate_message(MAVLink_message):
         '''
         Status of simulation environment, if used
         '''
-        def __init__(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro):
+        def __init__(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro, lat, lng):
                 MAVLink_message.__init__(self, MAVLINK_MSG_ID_SIMSTATE, 'SIMSTATE')
-                self._fieldnames = ['roll', 'pitch', 'yaw', 'xacc', 'yacc', 'zacc', 'xgyro', 'ygyro', 'zgyro']
+                self._fieldnames = ['roll', 'pitch', 'yaw', 'xacc', 'yacc', 'zacc', 'xgyro', 'ygyro', 'zgyro', 'lat', 'lng']
                 self.roll = roll
                 self.pitch = pitch
                 self.yaw = yaw
@@ -773,9 +818,11 @@ class MAVLink_simstate_message(MAVLink_message):
                 self.xgyro = xgyro
                 self.ygyro = ygyro
                 self.zgyro = zgyro
+                self.lat = lat
+                self.lng = lng
 
         def pack(self, mav):
-                return MAVLink_message.pack(self, mav, 42, struct.pack('<fffffffff', self.roll, self.pitch, self.yaw, self.xacc, self.yacc, self.zacc, self.xgyro, self.ygyro, self.zgyro))
+                return MAVLink_message.pack(self, mav, 111, struct.pack('<fffffffffff', self.roll, self.pitch, self.yaw, self.xacc, self.yacc, self.zacc, self.xgyro, self.ygyro, self.zgyro, self.lat, self.lng))
 
 class MAVLink_hwstatus_message(MAVLink_message):
         '''
@@ -807,6 +854,97 @@ class MAVLink_radio_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 21, struct.pack('<HHBBBBB', self.rxerrors, self.fixed, self.rssi, self.remrssi, self.txbuf, self.noise, self.remnoise))
+
+class MAVLink_limits_status_message(MAVLink_message):
+        '''
+        Status of AP_Limits. Sent in extended             status
+        stream when AP_Limits is enabled
+        '''
+        def __init__(self, limits_state, last_trigger, last_action, last_recovery, last_clear, breach_count, mods_enabled, mods_required, mods_triggered):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_LIMITS_STATUS, 'LIMITS_STATUS')
+                self._fieldnames = ['limits_state', 'last_trigger', 'last_action', 'last_recovery', 'last_clear', 'breach_count', 'mods_enabled', 'mods_required', 'mods_triggered']
+                self.limits_state = limits_state
+                self.last_trigger = last_trigger
+                self.last_action = last_action
+                self.last_recovery = last_recovery
+                self.last_clear = last_clear
+                self.breach_count = breach_count
+                self.mods_enabled = mods_enabled
+                self.mods_required = mods_required
+                self.mods_triggered = mods_triggered
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 144, struct.pack('<IIIIHBBBB', self.last_trigger, self.last_action, self.last_recovery, self.last_clear, self.breach_count, self.limits_state, self.mods_enabled, self.mods_required, self.mods_triggered))
+
+class MAVLink_wind_message(MAVLink_message):
+        '''
+        Wind estimation
+        '''
+        def __init__(self, direction, speed, speed_z):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_WIND, 'WIND')
+                self._fieldnames = ['direction', 'speed', 'speed_z']
+                self.direction = direction
+                self.speed = speed
+                self.speed_z = speed_z
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 1, struct.pack('<fff', self.direction, self.speed, self.speed_z))
+
+class MAVLink_data16_message(MAVLink_message):
+        '''
+        Data packet, size 16
+        '''
+        def __init__(self, type, len, data):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_DATA16, 'DATA16')
+                self._fieldnames = ['type', 'len', 'data']
+                self.type = type
+                self.len = len
+                self.data = data
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 234, struct.pack('<BB16s', self.type, self.len, self.data))
+
+class MAVLink_data32_message(MAVLink_message):
+        '''
+        Data packet, size 32
+        '''
+        def __init__(self, type, len, data):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_DATA32, 'DATA32')
+                self._fieldnames = ['type', 'len', 'data']
+                self.type = type
+                self.len = len
+                self.data = data
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 73, struct.pack('<BB32s', self.type, self.len, self.data))
+
+class MAVLink_data64_message(MAVLink_message):
+        '''
+        Data packet, size 64
+        '''
+        def __init__(self, type, len, data):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_DATA64, 'DATA64')
+                self._fieldnames = ['type', 'len', 'data']
+                self.type = type
+                self.len = len
+                self.data = data
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 181, struct.pack('<BB64s', self.type, self.len, self.data))
+
+class MAVLink_data96_message(MAVLink_message):
+        '''
+        Data packet, size 96
+        '''
+        def __init__(self, type, len, data):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_DATA96, 'DATA96')
+                self._fieldnames = ['type', 'len', 'data']
+                self.type = type
+                self.len = len
+                self.data = data
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 22, struct.pack('<BB96s', self.type, self.len, self.data))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2253,9 +2391,15 @@ mavlink_map = {
         MAVLINK_MSG_ID_FENCE_FETCH_POINT : ( '<BBB', MAVLink_fence_fetch_point_message, [0, 1, 2], 68 ),
         MAVLINK_MSG_ID_FENCE_STATUS : ( '<IHBB', MAVLink_fence_status_message, [2, 1, 3, 0], 189 ),
         MAVLINK_MSG_ID_AHRS : ( '<fffffff', MAVLink_ahrs_message, [0, 1, 2, 3, 4, 5, 6], 127 ),
-        MAVLINK_MSG_ID_SIMSTATE : ( '<fffffffff', MAVLink_simstate_message, [0, 1, 2, 3, 4, 5, 6, 7, 8], 42 ),
+        MAVLINK_MSG_ID_SIMSTATE : ( '<fffffffffff', MAVLink_simstate_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 111 ),
         MAVLINK_MSG_ID_HWSTATUS : ( '<HB', MAVLink_hwstatus_message, [0, 1], 21 ),
         MAVLINK_MSG_ID_RADIO : ( '<HHBBBBB', MAVLink_radio_message, [2, 3, 4, 5, 6, 0, 1], 21 ),
+        MAVLINK_MSG_ID_LIMITS_STATUS : ( '<IIIIHBBBB', MAVLink_limits_status_message, [5, 0, 1, 2, 3, 4, 6, 7, 8], 144 ),
+        MAVLINK_MSG_ID_WIND : ( '<fff', MAVLink_wind_message, [0, 1, 2], 1 ),
+        MAVLINK_MSG_ID_DATA16 : ( '<BB16s', MAVLink_data16_message, [0, 1, 2], 234 ),
+        MAVLINK_MSG_ID_DATA32 : ( '<BB32s', MAVLink_data32_message, [0, 1, 2], 73 ),
+        MAVLINK_MSG_ID_DATA64 : ( '<BB64s', MAVLink_data64_message, [0, 1, 2], 181 ),
+        MAVLINK_MSG_ID_DATA96 : ( '<BB96s', MAVLink_data96_message, [0, 1, 2], 22 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2926,7 +3070,7 @@ class MAVLink(object):
                 '''
                 return self.send(self.ahrs_encode(omegaIx, omegaIy, omegaIz, accel_weight, renorm_val, error_rp, error_yaw))
             
-        def simstate_encode(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro):
+        def simstate_encode(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro, lat, lng):
                 '''
                 Status of simulation environment, if used
 
@@ -2939,13 +3083,15 @@ class MAVLink(object):
                 xgyro                     : Angular speed around X axis rad/s (float)
                 ygyro                     : Angular speed around Y axis rad/s (float)
                 zgyro                     : Angular speed around Z axis rad/s (float)
+                lat                       : Latitude in degrees (float)
+                lng                       : Longitude in degrees (float)
 
                 '''
-                msg = MAVLink_simstate_message(roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro)
+                msg = MAVLink_simstate_message(roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro, lat, lng)
                 msg.pack(self)
                 return msg
             
-        def simstate_send(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro):
+        def simstate_send(self, roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro, lat, lng):
                 '''
                 Status of simulation environment, if used
 
@@ -2958,9 +3104,11 @@ class MAVLink(object):
                 xgyro                     : Angular speed around X axis rad/s (float)
                 ygyro                     : Angular speed around Y axis rad/s (float)
                 zgyro                     : Angular speed around Z axis rad/s (float)
+                lat                       : Latitude in degrees (float)
+                lng                       : Longitude in degrees (float)
 
                 '''
-                return self.send(self.simstate_encode(roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro))
+                return self.send(self.simstate_encode(roll, pitch, yaw, xacc, yacc, zacc, xgyro, ygyro, zgyro, lat, lng))
             
         def hwstatus_encode(self, Vcc, I2Cerr):
                 '''
@@ -3015,6 +3163,164 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.radio_encode(rssi, remrssi, txbuf, noise, remnoise, rxerrors, fixed))
+            
+        def limits_status_encode(self, limits_state, last_trigger, last_action, last_recovery, last_clear, breach_count, mods_enabled, mods_required, mods_triggered):
+                '''
+                Status of AP_Limits. Sent in extended             status stream when
+                AP_Limits is enabled
+
+                limits_state              : state of AP_Limits, (see enum LimitState, LIMITS_STATE) (uint8_t)
+                last_trigger              : time of last breach in milliseconds since boot (uint32_t)
+                last_action               : time of last recovery action in milliseconds since boot (uint32_t)
+                last_recovery             : time of last successful recovery in milliseconds since boot (uint32_t)
+                last_clear                : time of last all-clear in milliseconds since boot (uint32_t)
+                breach_count              : number of fence breaches (uint16_t)
+                mods_enabled              : AP_Limit_Module bitfield of enabled modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+                mods_required             : AP_Limit_Module bitfield of required modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+                mods_triggered            : AP_Limit_Module bitfield of triggered modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+
+                '''
+                msg = MAVLink_limits_status_message(limits_state, last_trigger, last_action, last_recovery, last_clear, breach_count, mods_enabled, mods_required, mods_triggered)
+                msg.pack(self)
+                return msg
+            
+        def limits_status_send(self, limits_state, last_trigger, last_action, last_recovery, last_clear, breach_count, mods_enabled, mods_required, mods_triggered):
+                '''
+                Status of AP_Limits. Sent in extended             status stream when
+                AP_Limits is enabled
+
+                limits_state              : state of AP_Limits, (see enum LimitState, LIMITS_STATE) (uint8_t)
+                last_trigger              : time of last breach in milliseconds since boot (uint32_t)
+                last_action               : time of last recovery action in milliseconds since boot (uint32_t)
+                last_recovery             : time of last successful recovery in milliseconds since boot (uint32_t)
+                last_clear                : time of last all-clear in milliseconds since boot (uint32_t)
+                breach_count              : number of fence breaches (uint16_t)
+                mods_enabled              : AP_Limit_Module bitfield of enabled modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+                mods_required             : AP_Limit_Module bitfield of required modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+                mods_triggered            : AP_Limit_Module bitfield of triggered modules, (see enum moduleid or LIMIT_MODULE) (uint8_t)
+
+                '''
+                return self.send(self.limits_status_encode(limits_state, last_trigger, last_action, last_recovery, last_clear, breach_count, mods_enabled, mods_required, mods_triggered))
+            
+        def wind_encode(self, direction, speed, speed_z):
+                '''
+                Wind estimation
+
+                direction                 : wind direction (degrees) (float)
+                speed                     : wind speed in ground plane (m/s) (float)
+                speed_z                   : vertical wind speed (m/s) (float)
+
+                '''
+                msg = MAVLink_wind_message(direction, speed, speed_z)
+                msg.pack(self)
+                return msg
+            
+        def wind_send(self, direction, speed, speed_z):
+                '''
+                Wind estimation
+
+                direction                 : wind direction (degrees) (float)
+                speed                     : wind speed in ground plane (m/s) (float)
+                speed_z                   : vertical wind speed (m/s) (float)
+
+                '''
+                return self.send(self.wind_encode(direction, speed, speed_z))
+            
+        def data16_encode(self, type, len, data):
+                '''
+                Data packet, size 16
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                msg = MAVLink_data16_message(type, len, data)
+                msg.pack(self)
+                return msg
+            
+        def data16_send(self, type, len, data):
+                '''
+                Data packet, size 16
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                return self.send(self.data16_encode(type, len, data))
+            
+        def data32_encode(self, type, len, data):
+                '''
+                Data packet, size 32
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                msg = MAVLink_data32_message(type, len, data)
+                msg.pack(self)
+                return msg
+            
+        def data32_send(self, type, len, data):
+                '''
+                Data packet, size 32
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                return self.send(self.data32_encode(type, len, data))
+            
+        def data64_encode(self, type, len, data):
+                '''
+                Data packet, size 64
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                msg = MAVLink_data64_message(type, len, data)
+                msg.pack(self)
+                return msg
+            
+        def data64_send(self, type, len, data):
+                '''
+                Data packet, size 64
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                return self.send(self.data64_encode(type, len, data))
+            
+        def data96_encode(self, type, len, data):
+                '''
+                Data packet, size 96
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                msg = MAVLink_data96_message(type, len, data)
+                msg.pack(self)
+                return msg
+            
+        def data96_send(self, type, len, data):
+                '''
+                Data packet, size 96
+
+                type                      : data type (uint8_t)
+                len                       : data length (uint8_t)
+                data                      : raw data (uint8_t)
+
+                '''
+                return self.send(self.data96_encode(type, len, data))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
@@ -3306,7 +3612,7 @@ class MAVLink(object):
 
                 target_system             : System ID (uint8_t)
                 target_component          : Component ID (uint8_t)
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_index               : Parameter index. Send -1 to use the param ID field as identifier (else the param id will be ignored) (int16_t)
 
                 '''
@@ -3328,7 +3634,7 @@ class MAVLink(object):
 
                 target_system             : System ID (uint8_t)
                 target_component          : Component ID (uint8_t)
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_index               : Parameter index. Send -1 to use the param ID field as identifier (else the param id will be ignored) (int16_t)
 
                 '''
@@ -3365,9 +3671,9 @@ class MAVLink(object):
                 keep track of received parameters and allows him to
                 re-request missing parameters after a loss or timeout.
 
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_value               : Onboard parameter value (float)
-                param_type                : Onboard parameter type: see MAVLINK_TYPE enum in mavlink/mavlink_types.h (uint8_t)
+                param_type                : Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types. (uint8_t)
                 param_count               : Total number of onboard parameters (uint16_t)
                 param_index               : Index of this onboard parameter (uint16_t)
 
@@ -3383,9 +3689,9 @@ class MAVLink(object):
                 keep track of received parameters and allows him to
                 re-request missing parameters after a loss or timeout.
 
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_value               : Onboard parameter value (float)
-                param_type                : Onboard parameter type: see MAVLINK_TYPE enum in mavlink/mavlink_types.h (uint8_t)
+                param_type                : Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types. (uint8_t)
                 param_count               : Total number of onboard parameters (uint16_t)
                 param_index               : Index of this onboard parameter (uint16_t)
 
@@ -3407,9 +3713,9 @@ class MAVLink(object):
 
                 target_system             : System ID (uint8_t)
                 target_component          : Component ID (uint8_t)
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_value               : Onboard parameter value (float)
-                param_type                : Onboard parameter type: see MAVLINK_TYPE enum in mavlink/mavlink_types.h (uint8_t)
+                param_type                : Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types. (uint8_t)
 
                 '''
                 msg = MAVLink_param_set_message(target_system, target_component, param_id, param_value, param_type)
@@ -3431,9 +3737,9 @@ class MAVLink(object):
 
                 target_system             : System ID (uint8_t)
                 target_component          : Component ID (uint8_t)
-                param_id                  : Onboard parameter id, terminated by NUL if the length is less than 16 human-readable chars and WITHOUT null termination (NUL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
+                param_id                  : Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string (char)
                 param_value               : Onboard parameter value (float)
-                param_type                : Onboard parameter type: see MAVLINK_TYPE enum in mavlink/mavlink_types.h (uint8_t)
+                param_type                : Onboard parameter type: see the MAV_PARAM_TYPE enum for supported data types. (uint8_t)
 
                 '''
                 return self.send(self.param_set_encode(target_system, target_component, param_id, param_value, param_type))
@@ -3646,7 +3952,7 @@ class MAVLink(object):
                 differential pressure sensor. The units are as
                 specified in each field.
 
-                time_boot_ms              : Timestamp (microseconds since UNIX epoch or microseconds since system boot) (uint32_t)
+                time_boot_ms              : Timestamp (milliseconds since system boot) (uint32_t)
                 press_abs                 : Absolute pressure (hectopascal) (float)
                 press_diff                : Differential pressure 1 (hectopascal) (float)
                 temperature               : Temperature measurement (0.01 degrees celsius) (int16_t)
@@ -3662,7 +3968,7 @@ class MAVLink(object):
                 differential pressure sensor. The units are as
                 specified in each field.
 
-                time_boot_ms              : Timestamp (microseconds since UNIX epoch or microseconds since system boot) (uint32_t)
+                time_boot_ms              : Timestamp (milliseconds since system boot) (uint32_t)
                 press_abs                 : Absolute pressure (hectopascal) (float)
                 press_diff                : Differential pressure 1 (hectopascal) (float)
                 temperature               : Temperature measurement (0.01 degrees celsius) (int16_t)
@@ -3915,7 +4221,7 @@ class MAVLink(object):
                 is as follows: 1000 microseconds: 0%, 2000
                 microseconds: 100%.
 
-                time_usec                 : Timestamp (since UNIX epoch or microseconds since system boot) (uint32_t)
+                time_usec                 : Timestamp (microseconds since system boot) (uint32_t)
                 port                      : Servo output port (set of 8 outputs = 1 port). Most MAVs will just use one, but this allows to encode more than 8 servos. (uint8_t)
                 servo1_raw                : Servo output 1 value, in microseconds (uint16_t)
                 servo2_raw                : Servo output 2 value, in microseconds (uint16_t)
@@ -3938,7 +4244,7 @@ class MAVLink(object):
                 is as follows: 1000 microseconds: 0%, 2000
                 microseconds: 100%.
 
-                time_usec                 : Timestamp (since UNIX epoch or microseconds since system boot) (uint32_t)
+                time_usec                 : Timestamp (microseconds since system boot) (uint32_t)
                 port                      : Servo output port (set of 8 outputs = 1 port). Most MAVs will just use one, but this allows to encode more than 8 servos. (uint8_t)
                 servo1_raw                : Servo output 1 value, in microseconds (uint16_t)
                 servo2_raw                : Servo output 2 value, in microseconds (uint16_t)
