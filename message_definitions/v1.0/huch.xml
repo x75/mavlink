@@ -293,5 +293,28 @@
                <field type="uint8_t" name="target_component">The component executing the action</field>
                <field type="uint8_t" name="action">The action id</field>
           </message>
+          <message id="231" name="HUCH_CAM_STATE">
+               <description>Camera state</description>
+               <field type="uint8_t" name="cam_index">The camera index</field>
+               <field type="uint8_t" name="exposure">Current camera exposure setting.</field>
+               <field type="uint8_t" name="contrast">Current camera contrast setting.</field>
+               <field type="uint8_t" name="gain">Current camera gain setting.</field>
+               <!-- field type="float[8]" name="hist">Eight bin histogram</field -->
+               <field type="float" name="hist1">Eight bin histogram field 1.</field>
+               <field type="float" name="hist2">Eight bin histogram field 2.</field>
+               <field type="float" name="hist3">Eight bin histogram field 3.</field>
+               <field type="float" name="hist4">Eight bin histogram field 4.</field>
+               <field type="float" name="hist5">Eight bin histogram field 5.</field>
+               <field type="float" name="hist6">Eight bin histogram field 6.</field>
+               <field type="float" name="hist7">Eight bin histogram field 7.</field>
+               <field type="float" name="hist8">Eight bin histogram field 8.</field>
+          </message>
+          <message id="232" name="HUCH_CAM_CMD">
+               <description>Camera state</description>
+               <field type="uint8_t" name="cam_index">The camera index</field>
+               <field type="uint8_t" name="exposure">Desired camera exposure setting.</field>
+               <field type="uint8_t" name="contrast">Desired camera contrast setting.</field>
+               <field type="uint8_t" name="gain">Desired camera gain setting.</field>
+          </message>
      </messages>
 </mavlink>
