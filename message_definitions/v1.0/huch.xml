@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <mavlink>
-     <include>common.xml</include>
+     <!-- include>common.xml</include -->
      <include>ardupilotmega.xml</include>
      <!-- note that HUCH specific messages should use the command id
       range from 200 to 240, to leave plenty of room for growth
