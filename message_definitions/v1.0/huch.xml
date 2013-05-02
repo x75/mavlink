@@ -1,7 +1,10 @@
 <?xml version='1.0'?>
 <mavlink>
-     <!-- include>common.xml</include -->
+     <include>common.xml</include>
+		<!--
      <include>ardupilotmega.xml</include>
+     <include>pixhawk.xml</include>
+-->
      <!-- note that HUCH specific messages should use the command id
       range from 200 to 240, to leave plenty of room for growth
       of common.xml and ardupilotmega.xml
@@ -75,10 +78,38 @@
     </enums>
 
      <messages>
-          <message id="200" name="MK_DEBUGOUT">
-               <description>HUCH Mikrokopter DebugOut</description>
-               <field type="array[66]" name="debugout">66 bytes of Debugout data. See qk_datatypes.h</field>
-          </message>
+<!-- from ardupilot -->
+<!--
+	  <message name="DATA16" id="169">
+	    <description>Data packet, size 16</description>
+	    <field type="uint8_t" name="type">data type</field>
+	    <field type="uint8_t" name="len">data length</field>
+	    <field type="uint8_t[16]" name="data">raw data</field>
+	  </message>
+
+	  <message name="DATA32" id="170">
+	    <description>Data packet, size 32</description>
+	    <field type="uint8_t" name="type">data type</field>
+	    <field type="uint8_t" name="len">data length</field>
+	    <field type="uint8_t[32]" name="data">raw data</field>
+	  </message>
+
+	  <message name="DATA64" id="171">
+	    <description>Data packet, size 64</description>
+	    <field type="uint8_t" name="type">data type</field>
+	    <field type="uint8_t" name="len">data length</field>
+	    <field type="uint8_t[64]" name="data">raw data</field>
+	  </message>
+
+	  <message name="DATA96" id="172">
+	    <description>Data packet, size 96</description>
+	    <field type="uint8_t" name="type">data type</field>
+	    <field type="uint8_t" name="len">data length</field>
+	    <field type="uint8_t[96]" name="data">raw data</field>
+	  </message>
+-->
+<!-- from ardupilot -->
+
           <message id="201" name="MK_EXTERN_CONTROL">
                <field type="uint8_t" name="remote_buttons"/>
                <field type="int8_t" name="nick"/>
@@ -223,6 +254,7 @@
                <!-- <field name="seqnr" type="uint16_t">sequence number (starting with 0 on every transmission)</field> -->
                <description>Generic sensor readings packed in locally defined order</description>
                <field type="uint64_t" name="usec">timestamp in microseconds</field>
+               <field type="uint8_t" name="subid">sub id</field>
                <field type="double[16]" name="data">16-vector of generic double</field>
           </message>
           <message id="222" name="HUCH_SIM_CTRL">
@@ -316,5 +348,12 @@
                <field type="uint8_t" name="contrast">Desired camera contrast setting.</field>
                <field type="uint8_t" name="gain">Desired camera gain setting.</field>
           </message>
+
+          <message id="200" name="MK_DEBUGOUT">
+               <description>HUCH Mikrokopter DebugOut</description>
+               <field type="array[66]" name="debugout">66 bytes of Debugout data. See qk_datatypes.h</field>
+          </message>
      </messages>
+
+
 </mavlink>
