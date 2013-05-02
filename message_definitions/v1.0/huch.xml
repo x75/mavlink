@@ -79,7 +79,6 @@
 
      <messages>
 <!-- from ardupilot -->
-<!--
 	  <message name="DATA16" id="169">
 	    <description>Data packet, size 16</description>
 	    <field type="uint8_t" name="type">data type</field>
@@ -107,7 +106,6 @@
 	    <field type="uint8_t" name="len">data length</field>
 	    <field type="uint8_t[96]" name="data">raw data</field>
 	  </message>
--->
 <!-- from ardupilot -->
 
           <message id="201" name="MK_EXTERN_CONTROL">
