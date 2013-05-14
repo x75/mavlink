@@ -347,6 +347,15 @@
                <field type="uint8_t" name="gain">Desired camera gain setting.</field>
           </message>
 
+          <message id="233" name="HUCH_VISUAL_OFLOW_SEN">
+               <description>huch optic flow data</description>
+               <!-- <field type="uint64_t" name="usec">timestamp in microseconds</field> -->
+               <field type="uint8_t" name="id">x flow integral (rel pos)</field>
+               <field type="float" name="u">x flow (rel velocity)</field>
+               <field type="float" name="v">y flow (rel velocity)</field>
+               <field type="float" name="squal">surface quality, number of features reported by sensor</field>
+          </message>
+<!-- remove mk_debugout from mavlink and mavhub, obsolete -->
           <message id="200" name="MK_DEBUGOUT">
                <description>HUCH Mikrokopter DebugOut</description>
                <field type="array[66]" name="debugout">66 bytes of Debugout data. See qk_datatypes.h</field>
