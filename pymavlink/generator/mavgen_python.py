@@ -191,9 +191,16 @@ def mavfmt(field):
         'uint64_t' : 'Q',
         }
 
+    dt_len_map = {
+        'char': 1,
+        'int8_t': 1,
+        'uint8_t': 1,
+        'double': 8
+        }
+    
     if field.array_length:
-        if field.type in ['char', 'int8_t', 'uint8_t']:
-            return str(field.array_length)+'s'
+        if field.type in ['char', 'int8_t', 'uint8_t', 'double']:
+            return str(field.array_length * dt_len_map[field.type])+'s'
         return str(field.array_length)+map[field.type]
     return map[field.type]
 
@@ -460,6 +467,12 @@ def generate(basename, xml):
         filelist.append(os.path.basename(x.filename))
 
     for m in msgs:
+        # print m.fields
+        # print m
+        # print m.name
+        # for mf in m.fields:
+        #     print mf.array_length
+        # print m.fieldnames
         if xml[0].little_endian:
             m.fmtstr = '<'
         else:
@@ -467,8 +480,14 @@ def generate(basename, xml):
         for f in m.ordered_fields:
             m.fmtstr += mavfmt(f)
         m.order_map = [ 0 ] * len(m.fieldnames)
+        # array_offset = 0
         for i in range(0, len(m.fieldnames)):
             m.order_map[i] = m.ordered_fieldnames.index(m.fieldnames[i])
+            # if m.fields[m.order_map[i]].array_length != 0:
+            #     print "ups", m.name, m.fields[m.order_map[i]].name
+            #     for j in range(i+1, i+m.fields[m.order_map[i]].array_length):
+            #         m.order_map.extend([j])
+
 
     print("Generating %s" % filename)
     outf = open(filename, "w")
